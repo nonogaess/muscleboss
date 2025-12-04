@@ -640,10 +640,9 @@
         <canvas id="radarChart"></canvas>
       </div>
       <div id="dashInfo" class="subtext"></div>
+      <div id="ipgSummary" class="summary" style="margin-top:8px;"></div>
+      <div id="badgesContainer" class="summary" style="margin-top:8px;"></div>
     </div>
-
-    <div id="ipgSummary" class="summary" style="margin-top:8px;"></div>
-    <div id="badgesContainer" class="summary" style="margin-top:8px;"></div>
 
     <!-- SECTION HISTORIQUE -->
     <div class="content-section" id="historique">
@@ -1029,6 +1028,11 @@
       state.user = e.target.value;
       saveState();
       renderEntrainement();
+
+      // Si on est sur l'onglet Statistiques, on met aussi à jour le radar + IPG
+      if (currentView === "statistiques") {
+        renderStatistics();
+      }
     });
 
     dateInput.addEventListener("change", (e) => {
