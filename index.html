@@ -656,7 +656,16 @@
     <!-- SECTION PROGRESSION -->
     <div class="content-section" id="progression">
       <h2 class="section-title">🎯 Analyse de Progression</h2>
+
+      <!-- Cartes récap Arnaud / Dancho -->
       <div class="progression-grid" id="progressionGrid"></div>
+
+      <!-- Comparatif IPG par séance -->
+      <h3 class="section-subtitle" style="margin-top:16px;">Évolution de l'IPG par séance — Arnaud vs Dancho</h3>
+      <div class="radar-container" style="margin-top:8px;">
+        <canvas id="ipgComparisonChart"></canvas>
+      </div>
+      <div id="ipgComparisonInfo" class="subtext"></div>
     </div>
 
     <!-- SECTION DÉTAIL EXERCICE -->
@@ -940,6 +949,7 @@
     let radarChart = null;
     let exerciseChart = null;
     let modalChart = null;
+    let ipgComparisonChart = null;
 
     // ========== HELPERS ==========
     function loadState() {
@@ -1028,11 +1038,8 @@
       state.user = e.target.value;
       saveState();
       renderEntrainement();
-
-      // Si on est sur l'onglet Statistiques, on met aussi à jour le radar + IPG
-      if (currentView === "statistiques") {
-        renderStatistics();
-      }
+      renderStatistics();   // radar + IPG global pour le bon user
+      renderProgression();  // cartes + comparatif IPG avec highlight du bon user
     });
 
     dateInput.addEventListener("change", (e) => {
@@ -1408,6 +1415,148 @@
       });
     }
 
+    // Calcule une "note d'IPG de séance" (0–100) pour chaque date d'un utilisateur
+    function computeSessionIPGSeries(user) {
+      const logs = state.logs.filter(l => l.user === user);
+      if (logs.length === 0) {
+        return { dates: [], values: [] };
+      }
+
+      const sessionsByDate = {};
+      logs.forEach(l => {
+        if (!sessionsByDate[l.date]) sessionsByDate[l.date] = [];
+        sessionsByDate[l.date].push(l);
+      });
+
+      const dates = Object.keys(sessionsByDate).sort();
+      const values = [];
+
+      const targetSessionVolume = 6000; // volume "référence" pour 100/100
+
+      dates.forEach(date => {
+        const dayLogs = sessionsByDate[date];
+        let volume = 0;
+        let totalRPE = 0;
+        let countRPE = 0;
+
+        dayLogs.forEach(l => {
+          const w = Number(l.weight) || 0;
+          const r = Number(l.reps) || 0;
+          volume += w * r;
+          if (l.rpe != null) {
+            totalRPE += Number(l.rpe);
+            countRPE++;
+          }
+        });
+
+        const volIndex = clamp((volume / targetSessionVolume) * 100, 0, 120);
+        const avgRPE = countRPE > 0 ? totalRPE / countRPE : 7.5;
+        const intensityIndex = clamp((avgRPE / 9) * 100, 0, 120);
+
+        // IPG de séance = moyenne volume + intensité
+        const sessionIPG = Math.round((volIndex + intensityIndex) / 2);
+        values.push(sessionIPG);
+      });
+
+      return { dates, values };
+    }
+
+    // Dessine le comparatif Arnaud vs Dancho dans l'onglet Progression
+    function renderIPGComparison() {
+      const arnaudSeries = computeSessionIPGSeries("Arnaud");
+      const danchoSeries = computeSessionIPGSeries("Dancho");
+
+      const allDatesSet = new Set([
+        ...arnaudSeries.dates,
+        ...danchoSeries.dates
+      ]);
+      const allDates = Array.from(allDatesSet).sort();
+
+      if (allDates.length === 0) {
+        const info = document.getElementById("ipgComparisonInfo");
+        info.textContent = "Pas encore assez de séances pour tracer une évolution.";
+        if (ipgComparisonChart) {
+          ipgComparisonChart.destroy();
+          ipgComparisonChart = null;
+        }
+        return;
+      }
+
+      const dataArnaud = allDates.map(d => {
+        const idx = arnaudSeries.dates.indexOf(d);
+        return idx !== -1 ? arnaudSeries.values[idx] : null;
+      });
+
+      const dataDancho = allDates.map(d => {
+        const idx = danchoSeries.dates.indexOf(d);
+        return idx !== -1 ? danchoSeries.values[idx] : null;
+      });
+
+      const ctx = document.getElementById("ipgComparisonChart").getContext("2d");
+      if (ipgComparisonChart) {
+        ipgComparisonChart.destroy();
+      }
+
+      const isArnaudSelected = state.user === "Arnaud";
+      const isDanchoSelected = state.user === "Dancho";
+
+      ipgComparisonChart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: allDates,
+          datasets: [
+            {
+              label: "Arnaud",
+              data: dataArnaud,
+              borderColor: "#00ff88",
+              backgroundColor: "rgba(0, 255, 136, 0.1)",
+              borderWidth: isArnaudSelected ? 3 : 1.5,
+              pointRadius: isArnaudSelected ? 4 : 2,
+              spanGaps: true,
+              tension: 0.3
+            },
+            {
+              label: "Dancho",
+              data: dataDancho,
+              borderColor: "#00d4ff",
+              backgroundColor: "rgba(0, 212, 255, 0.1)",
+              borderWidth: isDanchoSelected ? 3 : 1.5,
+              pointRadius: isDanchoSelected ? 4 : 2,
+              spanGaps: true,
+              tension: 0.3
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              labels: { color: "#e5e7eb" }
+            }
+          },
+          scales: {
+            x: {
+              ticks: { color: "#9ca3af" },
+              grid: { color: "rgba(148, 163, 184, 0.2)" }
+            },
+            y: {
+              suggestedMin: 0,
+              suggestedMax: 120,
+              ticks: { color: "#9ca3af" },
+              grid: { color: "rgba(148, 163, 184, 0.2)" }
+            }
+          }
+        }
+      });
+
+      const info = document.getElementById("ipgComparisonInfo");
+      info.innerHTML = `
+        Courbes : <span style="color:#00ff88;">Arnaud</span> vs
+        <span style="color:#00d4ff;">Dancho</span> — l'utilisateur sélectionné en haut est mis en avant (ligne plus épaisse).
+      `;
+    }
+
     function renderProgression() {
       progressionGrid.innerHTML = "";
 
@@ -1460,6 +1609,9 @@
 
         progressionGrid.appendChild(card);
       });
+
+       // Après avoir rempli les cartes, on met à jour le graphe comparatif
+      renderIPGComparison();
     }
 
     function renderExerciseDetail() {
