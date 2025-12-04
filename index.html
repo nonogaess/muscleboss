@@ -1,0 +1,1880 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>💪 Muscle Boss Ultimate V2</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+   <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f0c29">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      padding: 16px;
+      background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+      color: #e5e7eb;
+    }
+
+    .app {
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 16px 12px 18px;
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(20px);
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(0, 255, 136, 0.2);
+      border: 1px solid rgba(0, 255, 136, 0.1);
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    header h1 {
+      font-size: 1.9rem;
+      letter-spacing: 0.04em;
+      margin-bottom: 4px;
+      color: #00ff88;
+      text-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+      animation: glow 2s ease-in-out infinite alternate;
+    }
+    @keyframes glow {
+      from { text-shadow: 0 0 20px rgba(0, 255, 136, 0.5); }
+      to { text-shadow: 0 0 30px rgba(0, 255, 136, 0.8), 0 0 40px rgba(0, 255, 136, 0.5); }
+    }
+    header p {
+      font-size: 0.85rem;
+      color: #00d4ff;
+    }
+
+    /* TOP TABS - 4 onglets comme sur le screenshot */
+    .top-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      padding: 4px;
+      border-radius: 999px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(0, 255, 136, 0.2);
+    }
+    .top-tab-btn {
+      flex: 1;
+      padding: 10px 8px;
+      border-radius: 999px;
+      background: transparent;
+      border: 2px solid transparent;
+      color: #9ca3af;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    .top-tab-btn:before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 999px;
+      padding: 2px;
+      background: linear-gradient(135deg, #00ff88, #00d4ff);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .top-tab-btn.active {
+      background: linear-gradient(135deg, #00ff88, #00d4ff);
+      color: #0f0c29;
+      border-color: transparent;
+      box-shadow: 0 5px 20px rgba(0, 255, 136, 0.5);
+      transform: translateY(-1px);
+    }
+    .top-tab-btn:hover:not(.active) {
+      color: #00ff88;
+      border-color: rgba(0, 255, 136, 0.3);
+    }
+    .top-tab-btn:hover:not(.active):before {
+      opacity: 1;
+    }
+
+    /* CONTENT SECTIONS - Transitions fluides */
+    .content-section {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+                  transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      display: none;
+    }
+    .content-section.active {
+      opacity: 1;
+      transform: translateY(0);
+      display: block;
+    }
+
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 12px;
+      padding: 10px;
+      border-radius: 16px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(0, 212, 255, 0.3);
+    }
+    .control-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+    label {
+      font-size: 0.8rem;
+      color: #00d4ff;
+      min-width: 80px;
+      font-weight: 600;
+    }
+    select, input[type="date"], input[type="number"], input[type="text"] {
+      width: 100%;
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 2px solid rgba(0, 255, 136, 0.3);
+      background: rgba(0, 0, 0, 0.4);
+      color: #e5e7eb;
+      font-size: 0.83rem;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+    select:focus, input:focus {
+      border-color: #00ff88;
+      box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+      background: rgba(0, 0, 0, 0.5);
+    }
+
+    .day-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    .day-btn {
+      flex: 1;
+      padding: 8px 0;
+      border-radius: 999px;
+      border: 2px solid rgba(0, 212, 255, 0.3);
+      background: rgba(0, 0, 0, 0.3);
+      color: #e5e7eb;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .day-btn.active {
+      background: linear-gradient(135deg, #00d4ff, #00ff88);
+      color: #0f0c29;
+      border-color: transparent;
+      box-shadow: 0 8px 18px rgba(0, 212, 255, 0.4);
+    }
+    .day-btn:hover:not(.active) {
+      background: rgba(0, 212, 255, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .section-title {
+      font-size: 0.9rem;
+      margin-bottom: 6px;
+      color: #00d4ff;
+      font-weight: 600;
+    }
+
+    .exercise-card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid rgba(0, 255, 136, 0.3);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      transition: all 0.3s ease;
+    }
+    .gif-wrapper {
+      margin: 6px 0 8px;
+      border-radius: 10px;
+      overflow: hidden;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(0, 212, 255, 0.3);
+
+      /* On limite la taille, mais on laisse l'image choisir sa hauteur */
+      max-height: 220px;
+    }
+
+    /* L'image garde son ratio, et on ne la force plus en hauteur */
+    .exercise-gif {
+      display: block;
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      background: #020617;
+    }
+    .exercise-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 32px rgba(0, 255, 136, 0.3);
+      border-color: #00ff88;
+    }
+    .exercise-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+    .exercise-name {
+      font-size: 0.96rem;
+      font-weight: 600;
+      color: #00ff88;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .exercise-name:hover {
+      color: #00d4ff;
+    }
+    .tag {
+      font-size: 0.7rem;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(0, 212, 255, 0.2);
+      color: #00d4ff;
+      border: 1px solid rgba(0, 212, 255, 0.4);
+    }
+
+    .notes {
+      font-size: 0.75rem;
+      color: #9ca3af;
+      margin-bottom: 6px;
+    }
+    .notes span {
+      display: block;
+    }
+    .notes strong {
+      color: #e5e7eb;
+    }
+
+    .logs {
+      margin-bottom: 6px;
+    }
+    .log-item {
+      font-size: 0.75rem;
+      padding: 4px 6px;
+      border-radius: 10px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px dashed rgba(0, 212, 255, 0.3);
+      margin-bottom: 3px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.2s ease;
+    }
+    .log-item:hover {
+      background: rgba(0, 212, 255, 0.1);
+      border-color: #00d4ff;
+    }
+    .log-empty {
+      font-size: 0.75rem;
+      color: #4b5563;
+    }
+
+    .delete-btn {
+      background: none;
+      border: none;
+      color: #ff6b6b;
+      cursor: pointer;
+      font-size: 0.9rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+    }
+    .delete-btn:hover {
+      background: rgba(255, 107, 107, 0.2);
+      transform: scale(1.1);
+    }
+
+    .log-form {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-top: 4px;
+    }
+    .log-form-row {
+      display: flex;
+      gap: 4px;
+    }
+    .log-form-row input {
+      flex: 1;
+      min-width: 0;
+      padding: 5px 8px;
+      border-radius: 999px;
+      border: 2px solid rgba(0, 255, 136, 0.3);
+      background: rgba(0, 0, 0, 0.4);
+      color: #fff;
+      font-size: 0.75rem;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+    .log-form-row input:focus {
+      border-color: #00ff88;
+      box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+    }
+    button.add-set {
+      margin-top: 4px;
+      padding: 7px 0;
+      border-radius: 999px;
+      border: none;
+      background: linear-gradient(135deg, #00ff88, #00d4ff);
+      color: #0f0c29;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 5px 15px rgba(0, 255, 136, 0.3);
+    }
+    button.add-set:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 255, 136, 0.5);
+    }
+
+    .summary {
+      margin-top: 8px;
+      padding: 10px;
+      border-radius: 14px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(0, 255, 136, 0.3);
+      font-size: 0.8rem;
+    }
+    .summary strong {
+      color: #00ff88;
+    }
+
+    /* CANVAS */
+    canvas {
+      max-width: 100%;
+      border-radius: 12px;
+      cursor: pointer;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 10px;
+    }
+
+    .radar-container {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 16px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(0, 212, 255, 0.3);
+    }
+
+    .subtext {
+      font-size: 0.75rem;
+      color: #9ca3af;
+      margin-top: 8px;
+      line-height: 1.4;
+    }
+
+    /* MODAL */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.9);
+      backdrop-filter: blur(8px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.show {
+      display: flex;
+      animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .modal-content {
+      background: rgba(15, 12, 41, 0.95);
+      border: 2px solid #00ff88;
+      border-radius: 20px;
+      padding: 20px;
+      max-width: 900px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0, 255, 136, 0.3);
+      animation: slideUp 0.3s ease;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(50px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .modal-title {
+      font-size: 1.3rem;
+      color: #00ff88;
+      font-weight: bold;
+    }
+    .modal-close {
+      background: rgba(255, 107, 107, 0.2);
+      border: 2px solid #ff6b6b;
+      color: #ff6b6b;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      font-size: 1.5rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+    .modal-close:hover {
+      background: rgba(255, 107, 107, 0.3);
+      transform: rotate(90deg);
+    }
+    .modal-chart-container {
+      position: relative;
+      width: 100%;
+      height: 500px;
+    }
+
+    .back-btn {
+      padding: 8px 16px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.1);
+      color: #00d4ff;
+      border: 2px solid rgba(0, 212, 255, 0.3);
+      cursor: pointer;
+      margin-bottom: 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+    .back-btn:hover {
+      background: rgba(0, 212, 255, 0.2);
+      border-color: #00d4ff;
+      transform: translateX(-3px);
+    }
+
+    .exercise-stats {
+      font-size: 0.8rem;
+      color: #9ca3af;
+      margin-top: 8px;
+      padding: 8px;
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(0, 212, 255, 0.3);
+    }
+    .exercise-stats div {
+      margin-bottom: 4px;
+    }
+    .exercise-stats strong {
+      color: #00ff88;
+    }
+
+    /* HISTORY SECTION */
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .history-item {
+      background: rgba(255, 255, 255, 0.05);
+      border-left: 4px solid #00ff88;
+      padding: 12px;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+    .history-item:hover {
+      background: rgba(0, 255, 136, 0.1);
+      transform: translateX(5px);
+    }
+    .history-date {
+      color: #00d4ff;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+    .history-exercise {
+      font-size: 0.85rem;
+      color: #b0b0b0;
+      margin-left: 10px;
+    }
+
+    .export-btn {
+      width: 100%;
+      padding: 10px;
+      border-radius: 999px;
+      border: none;
+      background: linear-gradient(135deg, #00ff88, #00d4ff);
+      color: #0f0c29;
+      font-size: 0.9rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 5px 20px rgba(0, 255, 136, 0.3);
+      margin-top: 10px;
+    }
+    .export-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(0, 255, 136, 0.5);
+    }
+
+    /* PROGRESSION SECTION */
+    .progression-grid {
+      display: grid;
+      gap: 15px;
+    }
+    .progression-card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 15px;
+      border: 1px solid rgba(0, 255, 136, 0.3);
+    }
+    .progression-card h3 {
+      color: #00ff88;
+      margin-bottom: 10px;
+      font-size: 1rem;
+    }
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 0.85rem;
+    }
+    .stat-label {
+      color: #9ca3af;
+    }
+    .stat-value {
+      color: #00ff88;
+      font-weight: 600;
+    }
+    .stat-value.positive {
+      color: #00ff88;
+    }
+    .stat-value.negative {
+      color: #ff6b6b;
+    }
+
+    @media (max-width: 768px) {
+      header h1 {
+        font-size: 1.5rem;
+      }
+      .top-tab-btn {
+        font-size: 0.72rem;
+        padding: 8px 4px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>💪 MUSCLE BOSS ULTIMATE</h1>
+      <p>Suivi Pro · Programme A/B/C · Arnaud & Dancho</p>
+    </header>
+
+    <!-- TOP TABS - 4 onglets -->
+    <div class="top-tabs">
+      <button class="top-tab-btn active" data-tab="entrainement">Entraînement</button>
+      <button class="top-tab-btn" data-tab="statistiques">Statistiques</button>
+      <button class="top-tab-btn" data-tab="historique">Historique</button>
+      <button class="top-tab-btn" data-tab="progression">Progression</button>
+    </div>
+
+    <!-- SECTION ENTRAÎNEMENT -->
+    <div class="content-section active" id="entrainement">
+      <div class="controls">
+        <div class="control-row">
+          <label>Utilisateur</label>
+          <select id="userSelect">
+            <option value="Arnaud">Arnaud</option>
+            <option value="Dancho">Dancho</option>
+          </select>
+        </div>
+        <div class="control-row">
+          <label>Date</label>
+          <input type="date" id="dateInput" />
+        </div>
+      </div>
+
+      <div class="day-tabs">
+        <button class="day-btn active" data-day="A">Séance A</button>
+        <button class="day-btn" data-day="B">Séance B</button>
+        <button class="day-btn" data-day="C">Séance C</button>
+      </div>
+
+      <div id="exercisesContainer"></div>
+      <div class="summary" id="summaryEl"></div>
+    </div>
+
+    <!-- SECTION STATISTIQUES -->
+    <div class="content-section" id="statistiques">
+      <h2 class="section-title">📈 Performance globale (30 derniers jours)</h2>
+      <div class="radar-container">
+        <canvas id="radarChart"></canvas>
+      </div>
+      <div id="dashInfo" class="subtext"></div>
+    </div>
+
+    <div id="ipgSummary" class="summary" style="margin-top:8px;"></div>
+    <div id="badgesContainer" class="summary" style="margin-top:8px;"></div>
+
+    <!-- SECTION HISTORIQUE -->
+    <div class="content-section" id="historique">
+      <h2 class="section-title">📅 Historique des Entraînements</h2>
+      <div class="history-list" id="historyList"></div>
+      <button class="export-btn" id="exportBtn">💾 Exporter les données</button>
+      <input type="file" id="importFile" accept="application/json" style="display:none" />
+      <button class="export-btn" id="importBtn">📂 Importer des données</button>
+    </div>
+
+    <!-- SECTION PROGRESSION -->
+    <div class="content-section" id="progression">
+      <h2 class="section-title">🎯 Analyse de Progression</h2>
+      <div class="progression-grid" id="progressionGrid"></div>
+    </div>
+
+    <!-- SECTION DÉTAIL EXERCICE -->
+    <div class="content-section" id="exerciseDetail">
+      <button class="back-btn" id="backBtn">← Retour</button>
+      <h2 id="exerciseDetailTitle" style="color:#00ff88; margin-bottom:10px;"></h2>
+      <div class="radar-container">
+        <canvas id="exerciseChart"></canvas>
+      </div>
+      <div class="exercise-stats" id="exerciseStats"></div>
+    </div>
+  </div>
+
+  <!-- MODAL -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalTitle">Graphique</h3>
+        <button class="modal-close" id="modalClose">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-chart-container">
+          <canvas id="modalChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ========== PROGRAM DATA (from your file) ==========
+    const program = {
+  A: {
+    name: "Lundi — Pecs / Triceps / Épaules",
+    exercises: [
+
+      {
+        id: "chest_press",
+        name: "Chest Press Convergente",
+        muscle: "Pecs",
+        refMax: 100,
+        gifUrl: "chest_press.gif",
+        notesArnaud: "4×8–10 • RPE 7.5–9 • Repos 90s • Charge progressive • Pas à l’échec systématique.",
+        notesDancho: "4×8–10 • Superset pompes • Tempo rapide • Repos 45–60s • Pompes non à l’échec."
+      },
+
+      {
+        id: "db_incline_press",
+        name: "Développé incliné haltères (20–30°)",
+        muscle: "Pecs",
+        refMax: 60,
+        gifUrl: "db_press_neutral.gif",
+        notesArnaud: "4×10–12 • Inclinaison max 30° • RPE ≤9 • Contrôle total • Repos 90s.",
+        notesDancho: "4×10–12 • Tempo lent 3–1–2 • Charge modérée • Focus sensation pecs."
+      },
+
+      {
+        id: "cable_fly_any",
+        name: "Écartés poulie / Pec Deck",
+        muscle: "Pecs",
+        refMax: 40,
+        gifUrl: "cable_fly_any.gif",
+        notesArnaud: "3×12–15 • Repos complet • Étirement contrôlé • Aucun balancement.",
+        notesDancho: "3×12–15 • Superset dips • Amplitude partielle • Pas de dips profonds si gêne épaules."
+      },
+
+      {
+        id: "triceps_choice",
+        name: "Dips",
+        muscle: "Triceps",
+        refMax: 60,
+        gifUrl: "dips.gif",
+        notesArnaud: "3×10–12 • Focus triceps • Extension poulie recommandée si coudes sensibles.",
+        notesDancho: "3×10–12 • Superset extension triceps • Rythme soutenu."
+      },
+
+      {
+        id: "lat_raise",
+        name: "Élévations latérales",
+        muscle: "Épaules",
+        refMax: 20,
+        gifUrl: "lat_raise.gif",
+        notesArnaud: "3×15 • Strict • RPE 8–9 • Charge progressive.",
+        notesDancho: "3×15 • Superset gainage 1 min • Pas d’élan."
+      },
+
+      {
+        id: "triceps_overhead",
+        name: "Extension triceps overhead à la poulie",
+        muscle: "Triceps",
+        refMax: 40,
+        gifUrl: "triceps_overhead.gif",
+        notesArnaud: "3×12–15 • RPE 8–9 • Étirement contrôlé • Pas d’échec • Repos 45–60s.",
+        notesDancho: "3×12–15 • Finisher bras • Brûlure recherchée • Tempo continu."
+      }
+    ]
+  },
+
+  B: {
+    name: "Mercredi — Dos / Biceps / Abdos",
+    exercises: [
+
+      {
+        id: "lat_pulldown",
+        name: "Tractions OU Tirage Vertical",
+        muscle: "Dos",
+        refMax: 100,
+        gifUrl: "lat_pulldown.gif",
+        notesArnaud: "4×8–10 • Tirage machine prioritaire • Tractions lestées seulement si fraîcheur ++ • Repos 90–120s.",
+        notesDancho: "4×8–10 • Superset rowing TRX • Tempo contrôlé • Repos 60s."
+      },
+
+      {
+        id: "row_machine",
+        name: "Rowing (machine ou haltères appuyés)",
+        muscle: "Dos",
+        refMax: 100,
+        gifUrl: "row_machine.gif",
+        notesArnaud: "4×10–12 • Machine ou haltères appuyés • Éviter rowing barre lourd • RPE ≤9.",
+        notesDancho: "4×10–12 • Tempo lent • Contraction maximale • Superset possible."
+      },
+
+      {
+        id: "low_row",
+        name: "Tirage horizontal poulie",
+        muscle: "Dos",
+        refMax: 100,
+        gifUrl: "low_row.gif",
+        notesArnaud: "3×12–15 • Repos complet • Trajectoire propre.",
+        notesDancho: "3×12–15 • Superset curl biceps • Repos 45–60s."
+      },
+
+      {
+        id: "incline_curl",
+        name: "Curl barre ou haltères",
+        muscle: "Biceps",
+        refMax: 30,
+        gifUrl: "incline_curl.gif",
+        notesArnaud: "3×10–12 • Charges modérées • Aucun balancement.",
+        notesDancho: "3×10–12 • Superset crunchs • Rythme élevé."
+      },
+
+      {
+        id: "core_combo",
+        name: "Crunchs + Gainage",
+        muscle: "Abdos",
+        refMax: null,
+        gifUrl: "abs.gif",
+        notesArnaud: "3 séries • 20 crunchs + gainage long • Focus stabilité.",
+        notesDancho: "3 séries • Gainage lesté ou instable • Intensité max."
+      },
+
+      {
+        id: "spider_curl",
+        name: "Curl pupitre / Spider curl",
+        muscle: "Biceps",
+        refMax: 30,
+        gifUrl: "spider_curl.gif",
+        notesArnaud: "3×10–12 • Strict • Aucun élan • RPE 8–9 • Repos 45–60s.",
+        notesDancho: "3×10–12 • Dernier set drop-set possible • Contraction maximale."
+      }
+    ]
+  },
+
+  C: {
+    name: "Vendredi — Jambes / Full Body / Cardio",
+    exercises: [
+
+      {
+        id: "hack",
+        name: "Hack Squat",
+        muscle: "Quadriceps",
+        refMax: 140,
+        gifUrl: "hack.gif",
+        notesArnaud: "4×8–10 • Lourd • Repos 90s • Mouvement phare • Posture stable.",
+        notesDancho: "4×8–10 • Superset fentes statiques • Charge modérée • Volume élevé."
+      },
+
+      {
+        id: "leg_press",
+        name: "Presse à cuisses",
+        muscle: "Quadriceps",
+        refMax: 350,
+        gifUrl: "leg_press.gif",
+        notesArnaud: "4×10–12 • Charges progressives • Repos 120s.",
+        notesDancho: "4×10–12 • Superset mollets • Attention fatigue quadriceps."
+      },
+
+      {
+        id: "rdl",
+        name: "Soulevé de terre jambes tendues",
+        muscle: "Ischios",
+        refMax: 100,
+        gifUrl: "rdl.gif",
+        notesArnaud: "3×12 • RPE ≤8.5 • Repos complet • Jamais à l’échec.",
+        notesDancho: "3×12 • Tempo lent • Stretch contrôlé."
+      },
+
+      {
+        id: "walking_lunges",
+        name: "Fentes marchées",
+        muscle: "Jambes",
+        refMax: 60,
+        gifUrl: "bulgarian_split.gif",
+        notesArnaud: "3×12 / jambe • Charges modérées • Contrôle.",
+        notesDancho: "3×12 / jambe • Superset gainage dynamique • Rythme élevé."
+      },
+
+      {
+        id: "hiit",
+        name: "Cardio HIIT 30s / 30s",
+        muscle: "Cardio",
+        refMax: null,
+        gifUrl: null,
+        notesArnaud: "15 min • Intensité modérée • À éviter si jambes déjà vides.",
+        notesDancho: "15 min • Intensité maximale 🔥"
+      },
+
+      {
+        id: "hammer_curl_cable",
+        name: "Curl marteau à la poulie",
+        muscle: "Biceps",
+        refMax: 35,
+        gifUrl: "hammer_curl.gif",
+        notesArnaud: "3×12–15 • RPE 7–8 • Optionnel si fatigue haute • Repos 30–45s.",
+        notesDancho: "3×12–15 • Pompe maximale • Enchaînable avant cardio."
+      }
+    ]
+  }
+};
+
+    // Référentiels de performance "haut niveau" par muscle (1RM ou équivalent)
+    const musclePerformanceRef = {
+      "Pecs": 140,
+      "Dos": 160,
+      "Quadriceps": 220,
+      "Ischios": 140,
+      "Épaules": 70,
+      "Biceps": 50,
+      "Triceps": 70,
+      "Abdos": 0,    // à traiter à part
+      "Cardio": 0    // à traiter à part
+    };
+
+    // Mapping exercice → muscle (utilisé partout, pas seulement dans les stats)
+    const exerciseToMuscle = {
+      chest_press: "Pecs",
+      db_incline_press: "Pecs",
+      cable_fly_any: "Pecs",
+      triceps_choice: "Triceps",
+      triceps_overhead: "Triceps",
+      lat_raise: "Épaules",
+
+      lat_pulldown: "Dos",
+      row_machine: "Dos",
+      low_row: "Dos",
+
+      incline_curl: "Biceps",
+      spider_curl: "Biceps",
+      hammer_curl_cable: "Biceps",
+
+      core_combo: "Abdos",
+
+      hack: "Quadriceps",
+      leg_press: "Quadriceps",
+      rdl: "Ischios",
+      walking_lunges: "Quadriceps",
+
+      hiit: "Cardio"
+    };
+
+    // ========== STATE ==========
+    const state = {
+      user: "Arnaud",
+      date: new Date().toISOString().split("T")[0],
+      currentDay: "A",
+      logs: []
+    };
+
+    let currentView = "entrainement";
+    let currentExerciseId = null;
+    let radarChart = null;
+    let exerciseChart = null;
+    let modalChart = null;
+
+    // ========== HELPERS ==========
+    function loadState() {
+      const saved = localStorage.getItem("muscleAppState");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        state.logs = parsed.logs || [];
+        state.user = parsed.user || state.user;
+        state.date = parsed.date || state.date;
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem(
+        "muscleAppState",
+        JSON.stringify({
+          logs: state.logs,
+          user: state.user,
+          date: state.date
+        })
+      );
+    }
+
+    function estimate1RM(weight, reps) {
+      if (weight <= 0 || reps <= 0) return 0;
+      return weight * (1 + reps / 30);
+    }
+
+    function clamp(val, min, max) {
+      return Math.max(min, Math.min(max, val));
+    }
+
+    // ========== DOM ELEMENTS ==========
+    const userSelect = document.getElementById("userSelect");
+    const dateInput = document.getElementById("dateInput");
+    const dayButtons = document.querySelectorAll(".day-btn");
+    const tabButtons = document.querySelectorAll(".top-tab-btn");
+    const exercisesContainer = document.getElementById("exercisesContainer");
+    const summaryEl = document.getElementById("summaryEl");
+    const radarChartCanvas = document.getElementById("radarChart");
+    const dashInfo = document.getElementById("dashInfo");
+    const historyList = document.getElementById("historyList");
+    const exportBtn = document.getElementById("exportBtn");
+    const importBtn = document.getElementById("importBtn");
+    const importFileInput = document.getElementById("importFile");
+    const progressionGrid = document.getElementById("progressionGrid");
+    const backBtn = document.getElementById("backBtn");
+    const exerciseDetailTitle = document.getElementById("exerciseDetailTitle");
+    const exerciseStats = document.getElementById("exerciseStats");
+    const modalOverlay = document.getElementById("modalOverlay");
+    const modalClose = document.getElementById("modalClose");
+    const modalTitle = document.getElementById("modalTitle");
+
+    // ========== TAB SWITCHING ==========
+    tabButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const targetTab = btn.dataset.tab;
+        
+        // Update active button
+        tabButtons.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        
+        // Update active section with transition
+        document.querySelectorAll(".content-section").forEach(section => {
+          section.classList.remove("active");
+        });
+        
+        setTimeout(() => {
+          document.getElementById(targetTab).classList.add("active");
+          currentView = targetTab;
+          
+          // Render content for specific tabs
+          if (targetTab === "statistiques") {
+            renderStatistics();
+          } else if (targetTab === "historique") {
+            renderHistory();
+          } else if (targetTab === "progression") {
+            renderProgression();
+          }
+        }, 100);
+      });
+    });
+
+    // ========== EVENT LISTENERS ==========
+    userSelect.addEventListener("change", (e) => {
+      state.user = e.target.value;
+      saveState();
+      renderEntrainement();
+    });
+
+    dateInput.addEventListener("change", (e) => {
+      state.date = e.target.value;
+      saveState();
+      renderEntrainement();
+    });
+
+    dayButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        dayButtons.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        state.currentDay = btn.dataset.day;
+        renderEntrainement();
+      });
+    });
+
+    backBtn.addEventListener("click", () => {
+      currentExerciseId = null;
+      document.getElementById("exerciseDetail").classList.remove("active");
+      document.getElementById("entrainement").classList.add("active");
+      tabButtons.forEach(b => b.classList.remove("active"));
+      tabButtons[0].classList.add("active");
+    });
+
+    exportBtn.addEventListener("click", () => {
+      const dataStr = JSON.stringify(state, null, 2);
+      const blob = new Blob([dataStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `muscle-boss-${new Date().toISOString().split("T")[0]}.json`;
+      a.click();
+    });
+
+    importBtn.addEventListener("click", () => {
+      importFileInput.click();
+    });
+
+    importFileInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const json = JSON.parse(event.target.result);
+
+          if (!json || !Array.isArray(json.logs)) {
+            alert("⚠️ Fichier invalide : pas de propriété 'logs'.");
+            return;
+          }
+
+          if (!confirm("Importer ces données va AJOUTER les séries du fichier aux tiennes (sans remplacer). Continuer ?")) {
+            return;
+          }
+
+          const importedLogs = json.logs || [];
+          const existingLogs = state.logs || [];
+
+          // On ajoute uniquement les logs qui ne sont pas déjà présents
+          importedLogs.forEach(newLog => {
+            const isDuplicate = existingLogs.some(oldLog =>
+              oldLog.user === newLog.user &&
+              oldLog.date === newLog.date &&
+              oldLog.exerciseId === newLog.exerciseId &&
+              Number(oldLog.weight) === Number(newLog.weight) &&
+              Number(oldLog.reps) === Number(newLog.reps) &&
+              (oldLog.rpe ?? null) === (newLog.rpe ?? null)
+            );
+
+            if (!isDuplicate) {
+              existingLogs.push({
+                user: newLog.user,
+                date: newLog.date,
+                exerciseId: newLog.exerciseId,
+                weight: Number(newLog.weight) || 0,
+                reps: Number(newLog.reps) || 0,
+                rpe: newLog.rpe != null ? Number(newLog.rpe) : null
+              });
+            }
+          });
+
+          state.logs = existingLogs;
+
+          // On NE TOUCHE PAS à state.user ni state.date → tu restes sur ton contexte
+          saveState();
+
+          renderEntrainement();
+          if (currentView === "statistiques") renderStatistics();
+          if (currentView === "historique") renderHistory();
+          if (currentView === "progression") renderProgression();
+
+          alert("✅ Données importées et fusionnées avec succès (sans effacer les tiennes).");
+        } catch (err) {
+          console.error(err);
+          alert("⚠️ Erreur lors de la lecture du fichier JSON.");
+        }
+      };
+
+      reader.readAsText(file, "utf-8");
+      importFileInput.value = "";
+    });
+
+      reader.readAsText(file, "utf-8");
+      // On reset l'input pour pouvoir re-importer le même fichier plus tard si besoin
+      importFileInput.value = "";
+    });
+
+    modalClose.addEventListener("click", () => {
+      modalOverlay.classList.remove("show");
+      if (modalChart) {
+        modalChart.destroy();
+        modalChart = null;
+      }
+    });
+
+    // ========== RENDER FUNCTIONS ==========
+    function renderEntrainement() {
+      const day = program[state.currentDay];
+      exercisesContainer.innerHTML = `<div class="section-title">${day.name}</div>`;
+
+      let totalVolume = 0;
+      let totalSets = 0;
+      let totalReps = 0;
+
+      day.exercises.forEach(exercise => {
+        const exerciseLogs = state.logs.filter(
+          l => l.user === state.user && l.date === state.date && l.exerciseId === exercise.id
+        );
+
+        let exerciseVolume = 0;
+        exerciseLogs.forEach(l => {
+          const w = Number(l.weight) || 0;
+          const r = Number(l.reps) || 0;
+          exerciseVolume += w * r;
+          totalSets++;
+          totalReps += r;
+        });
+
+        totalVolume += exerciseVolume;
+
+        const card = document.createElement("div");
+        card.className = "exercise-card";
+
+      const notesArnaud = exercise.notesArnaud || "";
+      const notesDancho = exercise.notesDancho || "";
+
+        
+        card.innerHTML = `
+          <div class="exercise-header">
+            <div class="exercise-name" data-exercise-id="${exercise.id}">${exercise.name}</div>
+            <div class="tag">${exercise.muscle}</div>
+          </div>
+
+          ${exercise.gifUrl ? `
+            <div class="gif-wrapper">
+              <img src="${exercise.gifUrl}" alt="${exercise.name}" class="exercise-gif" />
+            </div>
+          ` : ""}
+
+          <div class="notes">
+            <span><strong>Arnaud :</strong> ${notesArnaud}</span>
+            <span><strong>Dancho :</strong> ${notesDancho}</span>
+          </div>
+          <div class="logs">
+            ${exerciseLogs.length > 0 ? exerciseLogs.map((log, idx) => {
+              const globalIdx = state.logs.indexOf(log);
+              return `
+                <div class="log-item">
+                  <span>${log.weight}kg × ${log.reps} reps${log.rpe ? ` (RPE ${log.rpe})` : ''}</span>
+                  <button class="delete-btn" onclick="deleteLog(${globalIdx})">🗑️</button>
+                </div>
+              `;
+            }).join('') : '<div class="log-empty">Aucune série enregistrée</div>'}
+          </div>
+          <div class="log-form">
+            <div class="log-form-row">
+              <input type="number" placeholder="Poids (kg)" id="weight-${exercise.id}" />
+              <input type="number" placeholder="Reps" id="reps-${exercise.id}" />
+              <input type="number" placeholder="RPE (1-10)" id="rpe-${exercise.id}" min="1" max="10" />
+            </div>
+            <button class="add-set" onclick="addSet('${exercise.id}')">➕ Ajouter série</button>
+          </div>
+        `;
+
+        card.querySelector(".exercise-name").addEventListener("click", () => {
+          currentExerciseId = exercise.id;
+          document.getElementById("entrainement").classList.remove("active");
+          document.getElementById("exerciseDetail").classList.add("active");
+          renderExerciseDetail();
+        });
+
+        exercisesContainer.appendChild(card);
+      });
+
+      summaryEl.innerHTML = `
+        <strong>Volume total:</strong> ${totalVolume.toFixed(0)} kg · 
+        <strong>Séries:</strong> ${totalSets} · 
+        <strong>Répétitions:</strong> ${totalReps}
+      `;
+    }
+
+    function renderStatistics() {
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - 30);
+      const cutoffStr = cutoff.toISOString().split("T")[0];
+
+      const recentLogs = state.logs.filter(l => l.date >= cutoffStr);
+
+      const muscles = [
+        "Pecs",
+        "Dos",
+        "Quadriceps",
+        "Ischios",
+        "Épaules",
+        "Biceps",
+        "Triceps",
+        "Abdos",
+        "Cardio"
+      ];
+
+      // 1RM max par muscle et par user, sur les 30 derniers jours
+      function computeMusclePerformance(user, muscle) {
+        const logs = recentLogs.filter(l => {
+          const m = exerciseToMuscle[l.exerciseId];
+          return l.user === user && m === muscle;
+        });
+
+        if (logs.length === 0) return 0;
+
+        let best1RM = 0;
+        logs.forEach(l => {
+          const est = estimate1RM(Number(l.weight) || 0, Number(l.reps) || 0);
+          if (est > best1RM) best1RM = est;
+        });
+
+        const ref = musclePerformanceRef[muscle] || 0;
+        if (!ref) return 0;
+
+        const score = (best1RM / ref) * 100;
+        return clamp(score, 0, 100); // 0–100%
+      }
+
+      const dataArnaud = muscles.map(m => computeMusclePerformance("Arnaud", m));
+      const dataDancho = muscles.map(m => computeMusclePerformance("Dancho", m));
+
+      const ctx = radarChartCanvas.getContext("2d");
+      if (radarChart) {
+        radarChart.destroy();
+      }
+
+      radarChart = new Chart(ctx, {
+        type: "radar",
+        data: {
+          labels: muscles,
+          datasets: [
+            {
+              label: "Arnaud (performance normalisée)",
+              data: dataArnaud,
+              borderColor: "#00ff88",
+              backgroundColor: "rgba(0, 255, 136, 0.2)",
+              borderWidth: 3,
+              pointRadius: 5,
+              pointBackgroundColor: "#00ff88"
+            },
+            {
+              label: "Dancho (performance normalisée)",
+              data: dataDancho,
+              borderColor: "#00d4ff",
+              backgroundColor: "rgba(0, 212, 255, 0.2)",
+              borderWidth: 3,
+              pointRadius: 5,
+              pointBackgroundColor: "#00d4ff"
+            }
+          ]
+        },
+        options: {
+          scales: {
+            r: {
+              suggestedMin: 0,
+              suggestedMax: 100,
+              ticks: { stepSize: 20, display: true, color: "#9ca3af" },
+              grid: { circular: true, color: "rgba(255, 255, 255, 0.1)" },
+              pointLabels: { color: "#e5e7eb", font: { size: 12 } }
+            }
+          },
+          plugins: {
+            legend: { 
+              position: "top",
+              labels: { color: "#e5e7eb", font: { size: 14 } }
+            }
+          },
+          onClick: () => {
+            openModal("Performance Globale (30 jours)", "radar", {
+              labels: muscles,
+              datasets: [
+                {
+                  label: "Arnaud",
+                  data: dataArnaud,
+                  borderColor: "#00ff88",
+                  backgroundColor: "rgba(0, 255, 136, 0.2)",
+                  borderWidth: 3,
+                  pointRadius: 5
+                },
+                {
+                  label: "Dancho",
+                  data: dataDancho,
+                  borderColor: "#00d4ff",
+                  backgroundColor: "rgba(0, 212, 255, 0.2)",
+                  borderWidth: 3,
+                  pointRadius: 5
+                }
+              ]
+            });
+          }
+        }
+      });
+
+      // Voix + IPG + badges pour l'utilisateur sélectionné
+      renderIPGAndBadges(state.user, muscles, {
+        Arnaud: dataArnaud,
+        Dancho: dataDancho
+      });
+    }
+
+    function renderHistory() {
+      historyList.innerHTML = "";
+
+      if (state.logs.length === 0) {
+        historyList.innerHTML = '<div style="text-align:center; color:#9ca3af;">Aucun historique disponible</div>';
+        return;
+      }
+
+      const groupedByDate = {};
+      state.logs.forEach(log => {
+        if (!groupedByDate[log.date]) {
+          groupedByDate[log.date] = [];
+        }
+        groupedByDate[log.date].push(log);
+      });
+
+      const dates = Object.keys(groupedByDate).sort().reverse();
+
+      dates.forEach(date => {
+        const logs = groupedByDate[date];
+        const item = document.createElement("div");
+        item.className = "history-item";
+        
+        let exercisesList = '';
+        const exerciseGroups = {};
+        logs.forEach(log => {
+          if (!exerciseGroups[log.exerciseId]) {
+            exerciseGroups[log.exerciseId] = [];
+          }
+          exerciseGroups[log.exerciseId].push(log);
+        });
+
+        Object.entries(exerciseGroups).forEach(([exId, exLogs]) => {
+          let exerciseName = exId;
+          Object.values(program).forEach(day => {
+            day.exercises.forEach(ex => {
+              if (ex.id === exId) exerciseName = ex.name;
+            });
+          });
+          
+          const volume = exLogs.reduce((sum, l) => sum + (l.weight * l.reps), 0);
+          exercisesList += `<div class="history-exercise">${exerciseName}: ${exLogs.length} séries · ${volume.toFixed(0)} kg</div>`;
+        });
+
+        item.innerHTML = `
+          <div class="history-date">${new Date(date).toLocaleDateString('fr-FR')}</div>
+          ${exercisesList}
+        `;
+        
+        historyList.appendChild(item);
+      });
+    }
+
+    function renderProgression() {
+      progressionGrid.innerHTML = "";
+
+      const users = ["Arnaud", "Dancho"];
+      users.forEach(user => {
+        const userLogs = state.logs.filter(l => l.user === user);
+        
+        if (userLogs.length === 0) {
+          progressionGrid.innerHTML += `
+            <div class="progression-card">
+              <h3>${user}</h3>
+              <div style="color:#9ca3af;">Aucune donnée disponible</div>
+            </div>
+          `;
+          return;
+        }
+
+        let totalVolume = 0;
+        let totalSets = userLogs.length;
+        const uniqueDates = new Set(userLogs.map(l => l.date));
+        const sessions = uniqueDates.size;
+
+        userLogs.forEach(l => {
+          totalVolume += (Number(l.weight) || 0) * (Number(l.reps) || 0);
+        });
+
+        const avgVolumePerSession = sessions > 0 ? totalVolume / sessions : 0;
+
+        const card = document.createElement("div");
+        card.className = "progression-card";
+        card.innerHTML = `
+          <h3>${user}</h3>
+          <div class="stat-row">
+            <span class="stat-label">Volume total</span>
+            <span class="stat-value">${totalVolume.toFixed(0)} kg</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Séries totales</span>
+            <span class="stat-value">${totalSets}</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Séances</span>
+            <span class="stat-value">${sessions}</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Volume moyen/séance</span>
+            <span class="stat-value">${avgVolumePerSession.toFixed(0)} kg</span>
+          </div>
+        `;
+
+        progressionGrid.appendChild(card);
+      });
+    }
+
+    function renderExerciseDetail() {
+      if (!currentExerciseId) return;
+
+      let exercise = null;
+      Object.values(program).forEach(day => {
+        day.exercises.forEach(exo => {
+          if (exo.id === currentExerciseId) exercise = exo;
+        });
+      });
+
+      if (!exercise) {
+        exerciseDetailTitle.textContent = "Exercice introuvable";
+        exerciseStats.textContent = "";
+        return;
+      }
+
+      exerciseDetailTitle.textContent = exercise.name;
+
+      const datesSet = new Set();
+      state.logs.forEach(l => {
+        if (l.exerciseId === currentExerciseId) {
+          datesSet.add(l.date);
+        }
+      });
+
+      const dates = Array.from(datesSet).sort();
+
+      function getBest1RMForUserOnDate(user, date) {
+        const logs = state.logs.filter(
+          l => l.user === user && l.exerciseId === currentExerciseId && l.date === date
+        );
+        let best = 0;
+        logs.forEach(l => {
+          const est = estimate1RM(Number(l.weight) || 0, Number(l.reps) || 0);
+          if (est > best) best = est;
+        });
+        return best;
+      }
+
+      const dataArnaud = dates.map(d => getBest1RMForUserOnDate("Arnaud", d) || null);
+      const dataDancho = dates.map(d => getBest1RMForUserOnDate("Dancho", d) || null);
+
+      const ctx = document.getElementById("exerciseChart").getContext("2d");
+      if (exerciseChart) {
+        exerciseChart.destroy();
+      }
+
+      if (dates.length === 0) {
+        exerciseStats.textContent = "Aucune donnée enregistrée pour cet exercice.";
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        return;
+      }
+
+      exerciseChart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: dates,
+          datasets: [
+            {
+              label: "Arnaud — 1RM estimée",
+              data: dataArnaud,
+              borderColor: "#00ff88",
+              backgroundColor: "rgba(0, 255, 136, 0.1)",
+              borderWidth: 2,
+              spanGaps: true,
+              tension: 0.3
+            },
+            {
+              label: "Dancho — 1RM estimée",
+              data: dataDancho,
+              borderColor: "#00d4ff",
+              backgroundColor: "rgba(0, 212, 255, 0.1)",
+              borderWidth: 2,
+              spanGaps: true,
+              tension: 0.3
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: "1RM estimée (kg)",
+                color: "#e5e7eb"
+              },
+              ticks: { color: "#9ca3af" },
+              grid: { color: "rgba(255, 255, 255, 0.1)" }
+            },
+            x: {
+              ticks: { color: "#9ca3af" },
+              grid: { color: "rgba(255, 255, 255, 0.1)" }
+            }
+          },
+          plugins: {
+            legend: {
+              labels: { color: "#e5e7eb" }
+            }
+          }
+        }
+      });
+
+      const bestArnaud = Math.max(...dataArnaud.filter(v => v !== null));
+      const bestDancho = Math.max(...dataDancho.filter(v => v !== null));
+
+      exerciseStats.innerHTML = `
+        <div><strong>Meilleure 1RM Arnaud:</strong> ${bestArnaud ? bestArnaud.toFixed(1) + " kg" : "—"}</div>
+        <div><strong>Meilleure 1RM Dancho:</strong> ${bestDancho ? bestDancho.toFixed(1) + " kg" : "—"}</div>
+      `;
+    }
+
+    function computeIPG(user) {
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - 30);
+      const cutoffStr = cutoff.toISOString().split("T")[0];
+
+      const logs = state.logs.filter(l => l.user === user && l.date >= cutoffStr);
+      if (logs.length === 0) {
+        return {
+          ipg: 0,
+          volumeIndex: 0,
+          freqIndex: 0,
+          intensityIndex: 0,
+          sessions: 0,
+          totalVolume: 0
+        };
+      }
+
+      let totalVolume = 0;
+      let totalRPE = 0;
+      let countRPE = 0;
+      const datesSet = new Set();
+
+      logs.forEach(l => {
+        const w = Number(l.weight) || 0;
+        const r = Number(l.reps) || 0;
+        totalVolume += w * r;
+        datesSet.add(l.date);
+
+        if (l.rpe) {
+          totalRPE += l.rpe;
+          countRPE++;
+        }
+      });
+
+      const sessions = datesSet.size;
+      const avgRPE = countRPE > 0 ? totalRPE / countRPE : 7.5;
+
+      // Heuristiques (ajustables) :
+      const targetVolumeMonth = 60000; // 60 tonnes sur 30j = 100%
+      const targetSessions = 12;       // 3 séances / semaine
+
+      const volumeIndex = clamp((totalVolume / targetVolumeMonth) * 100, 0, 100);
+      const freqIndex   = clamp((sessions / targetSessions) * 100, 0, 100);
+      const intensityIndex = clamp((avgRPE / 9) * 100, 0, 100);
+
+      const ipg = Math.round((volumeIndex + freqIndex + intensityIndex) / 3);
+
+      return {
+        ipg,
+        volumeIndex: Math.round(volumeIndex),
+        freqIndex: Math.round(freqIndex),
+        intensityIndex: Math.round(intensityIndex),
+        sessions,
+        totalVolume: Math.round(totalVolume)
+      };
+    }
+
+    function getUserBadges(user, ipgData) {
+      const badges = [];
+
+      if (ipgData.sessions >= 8) {
+        badges.push({
+          id: "consistency_1",
+          label: "Soldat régulier",
+          desc: "Au moins 8 séances sur les 30 derniers jours."
+        });
+      }
+
+      if (ipgData.sessions >= 12) {
+        badges.push({
+          id: "consistency_2",
+          label: "Machine à la salle",
+          desc: "Tu tournes à plein régime (≥12 séances / 30j)."
+        });
+      }
+
+      if (ipgData.totalVolume >= 40000) {
+        badges.push({
+          id: "volume_monster",
+          label: "Volume Monster",
+          desc: "Plus de 40 tonnes déplacées sur les 30 derniers jours."
+        });
+      }
+
+      // Badge "PR Hunter" : si tu as au moins un exercice où la meilleure 1RM
+      // récente est > 90% du max historique
+      let hasPR = false;
+
+      // On calcule un max historique par exercice
+      const allUserLogs = state.logs.filter(l => l.user === user);
+      const maxByExercise = {};
+      allUserLogs.forEach(l => {
+        const est = estimate1RM(Number(l.weight) || 0, Number(l.reps) || 0);
+        if (!maxByExercise[l.exerciseId] || est > maxByExercise[l.exerciseId]) {
+          maxByExercise[l.exerciseId] = est;
+        }
+      });
+
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - 30);
+      const cutoffStr = cutoff.toISOString().split("T")[0];
+      const recentLogs = allUserLogs.filter(l => l.date >= cutoffStr);
+
+      const bestRecentByExercise = {};
+      recentLogs.forEach(l => {
+        const est = estimate1RM(Number(l.weight) || 0, Number(l.reps) || 0);
+        if (!bestRecentByExercise[l.exerciseId] || est > bestRecentByExercise[l.exerciseId]) {
+          bestRecentByExercise[l.exerciseId] = est;
+        }
+      });
+
+      Object.keys(bestRecentByExercise).forEach(exId => {
+        const recent = bestRecentByExercise[exId];
+        const maxHist = maxByExercise[exId] || 0;
+        if (maxHist > 0 && recent >= 0.9 * maxHist) {
+          hasPR = true;
+        }
+      });
+
+      if (hasPR) {
+        badges.push({
+          id: "pr_hunter",
+          label: "PR Hunter",
+          desc: "Tu as frôlé ou battu certains de tes records récemment."
+        });
+      }
+
+      return badges;
+    }
+
+    function renderIPGAndBadges(user, muscles, perfDataByUser) {
+      const ipgData = computeIPG(user);
+      const ipgSummaryEl = document.getElementById("ipgSummary");
+      const badgesContainer = document.getElementById("badgesContainer");
+
+      const perfArray = perfDataByUser[user] || [];
+      let bestMuscle = null;
+      let bestScore = -1;
+      let worstMuscle = null;
+      let worstScore = 101;
+
+      muscles.forEach((m, idx) => {
+        const v = perfArray[idx];
+        if (v > 0 && v > bestScore) {
+          bestScore = v;
+          bestMuscle = m;
+        }
+        if (v > 0 && v < worstScore) {
+          worstScore = v;
+          worstMuscle = m;
+        }
+      });
+
+      // Voix de l'app selon IPG
+      let mood;
+      if (ipgData.ipg === 0) {
+        mood = `${user}, j'ai besoin de plus de données pour te juger. Pour l'instant, l'histoire est vide.`;
+      } else if (ipgData.ipg < 40) {
+        mood = `${user}, phase creuse en ce moment. On reprend un rythme propre, sans se cramer, mais on arrête de dormir debout.`;
+      } else if (ipgData.ipg < 70) {
+        mood = `${user}, base solide. Tu construis quelque chose de sérieux, mais il reste beaucoup de marge. On peut pousser un cran plus loin sur la régularité.`;
+      } else {
+        mood = `${user}, très bon niveau de régularité et de charge. Là on parle d'un vrai cycle d'athlète. Si on garde ce rythme, les perfs vont suivre.`;
+      }
+
+      let focusText = "";
+      if (bestMuscle && worstMuscle && bestMuscle !== worstMuscle) {
+        focusText = `Ton point fort actuel : <strong>${bestMuscle}</strong> (~${bestScore.toFixed(0)}%). 
+    Ton point à travailler : <strong>${worstMuscle}</strong> (~${worstScore.toFixed(0)}%).`;
+      }
+
+      ipgSummaryEl.innerHTML = `
+        <div><strong>IPG (Indice de Progression Globale) :</strong> ${ipgData.ipg}/100</div>
+        <div>Volume 30j : <strong>${ipgData.totalVolume} kg</strong> · Séances : <strong>${ipgData.sessions}</strong></div>
+        <div>Détail : Volume ${ipgData.volumeIndex}/100 · Fréquence ${ipgData.freqIndex}/100 · Intensité ${ipgData.intensityIndex}/100</div>
+        <div style="margin-top:6px;">${mood}</div>
+        ${focusText ? `<div style="margin-top:4px;">${focusText}</div>` : ""}
+      `;
+
+      const badges = getUserBadges(user, ipgData);
+      if (badges.length === 0) {
+        badgesContainer.innerHTML = `<div style="color:#9ca3af;">Pas encore de badge débloqué. Tu sais ce qu'il te reste à faire.</div>`;
+      } else {
+        badgesContainer.innerHTML = `
+          <div style="margin-bottom:4px;"><strong>Badges débloqués :</strong></div>
+          ${badges.map(b => `
+            <div style="margin-bottom:4px;">
+              🏅 <strong>${b.label}</strong> — <span style="color:#9ca3af;">${b.desc}</span>
+            </div>
+          `).join("")}
+        `;
+      }
+
+      // On garde l'info "clique pour agrandir" dans dashInfo
+      dashInfo.innerHTML = `<div>💡 Clique sur le radar pour l'agrandir en plein écran.</div>`;
+    }
+
+    function openModal(title, chartType, data) {
+      modalTitle.textContent = title;
+      modalOverlay.classList.add("show");
+      
+      if (modalChart) {
+        modalChart.destroy();
+      }
+
+      const ctx = document.getElementById("modalChart").getContext("2d");
+      modalChart = new Chart(ctx, {
+        type: chartType,
+        data: data,
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: chartType === "radar" ? {
+            r: {
+              suggestedMin: 0,
+              suggestedMax: 100,
+              ticks: { stepSize: 20, color: "#9ca3af" },
+              grid: { color: "rgba(255, 255, 255, 0.1)" },
+              pointLabels: { color: "#e5e7eb", font: { size: 14 } }
+            }
+          } : {
+            y: {
+              beginAtZero: true,
+              ticks: { color: "#9ca3af" },
+              grid: { color: "rgba(255, 255, 255, 0.1)" }
+            },
+            x: {
+              ticks: { color: "#9ca3af" },
+              grid: { color: "rgba(255, 255, 255, 0.1)" }
+            }
+          },
+          plugins: {
+            legend: {
+              labels: { color: "#e5e7eb", font: { size: 16 } }
+            }
+          }
+        }
+      });
+    }
+
+    // ========== ADD/DELETE ==========
+    window.addSet = function(exerciseId) {
+      const weightInput = document.getElementById(`weight-${exerciseId}`);
+      const repsInput = document.getElementById(`reps-${exerciseId}`);
+      const rpeInput = document.getElementById(`rpe-${exerciseId}`);
+      
+      const weight = weightInput.value;
+      const reps = repsInput.value;
+      const rpe = rpeInput.value;
+
+      if (!weight || !reps) {
+        alert("⚠️ Veuillez remplir poids et répétitions");
+        return;
+      }
+
+      state.logs.push({
+        user: state.user,
+        date: state.date,
+        exerciseId: exerciseId,
+        weight: Number(weight),
+        reps: Number(reps),
+        rpe: rpe ? Number(rpe) : null
+      });
+
+      saveState();
+      weightInput.value = "";
+      repsInput.value = "";
+      rpeInput.value = "";
+      renderEntrainement();
+    };
+
+    window.deleteLog = function(index) {
+      if (confirm("Supprimer cette série ?")) {
+        state.logs.splice(index, 1);
+        saveState();
+        renderEntrainement();
+      }
+    };
+
+    // ========== INIT ==========
+    loadState();
+    userSelect.value = state.user;
+    dateInput.value = state.date;
+    renderEntrainement();
+
+    // ========== PWA: Service Worker ==========
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./service-worker.js')
+          .then(reg => {
+            console.log('Service Worker registered:', reg.scope);
+          })
+          .catch(err => {
+            console.error('Service Worker registration failed:', err);
+          });
+      });
+    }
+  </script>
+</body>
+</html>
+  </script>
+</body>
+</html>
